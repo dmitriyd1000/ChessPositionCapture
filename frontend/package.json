@@ -2,16 +2,21 @@
   "name": "frontend",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+  "type": "commonjs",
+  "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
     "start": "vite",
     "build": "tsc -b && vite build",
+    "build:electron": "tsc -p tsconfig.electron.json",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
+    "electron:build": "npm run build && npm run build:electron && electron-builder",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "chess.js": "^1.4.0",
+    "html2canvas": "^1.4.1",
     "react": "^19.2.0",
     "react-chessboard": "^5.8.6",
     "react-dom": "^19.2.0"
@@ -21,13 +26,38 @@
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
+    "@types/screenshot-desktop": "^1.15.0",
     "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "screenshot-desktop": "^1.15.3",
+    "sharp": "^0.34.5",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.chesspositioncapture.app",
+    "productName": "Chess Position Capture",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "public/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    }
   }
 }

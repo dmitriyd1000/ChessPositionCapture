@@ -1,0 +1,9 @@
+.chessboard-wrapper {
+  display: grid;
+  place-items: center;
+}
+
+.chessboard-container {
+  position: relative;
+}
+
