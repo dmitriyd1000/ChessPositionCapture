@@ -1,0 +1,9 @@
+{
+  "watch": ["dist-electron"],
+  "ext": "js",
+  "ignore": ["dist-electron/**/*.map"],
+  "delay": 500,
+  "exec": "cross-env NODE_ENV=development electron .",
+  "verbose": true
+}
+

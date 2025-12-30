@@ -13,7 +13,7 @@ contextBridge.exposeInMainWorld('electron', {
       throw new Error(`Invalid IPC channel: ${channel}`);
     },
     send: (channel: string, ...args: any[]) => {
-      const validChannels = ['selection-complete', 'selection-cancelled'];
+      const validChannels = ['selection-complete', 'selection-cancelled', 'selection-complete-by-window', 'selection-adjust'];
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, ...args);
       } else {
@@ -30,4 +30,3 @@ contextBridge.exposeInMainWorld('electron', {
     },
   },
 });
-

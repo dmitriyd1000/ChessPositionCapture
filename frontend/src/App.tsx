@@ -17,25 +17,54 @@ function App() {
 
     // Handle screenshot using Electron
     const startSelectionMode = async () => {
-        try {
-            if (window.electron) {
-                // Electron is available - use native screenshot
-                const imageData = await window.electron.ipcRenderer.invoke('open-selection-overlay');
+        const startTime = performance.now();
+        const logWithTimestamp = (message: string) => {
+            const elapsed = (performance.now() - startTime).toFixed(2);
+            console.log(`[${elapsed}ms] ${message}`);
+        };
 
-                // Download the captured region
-                const link = document.createElement('a');
-                link.href = imageData;
-                link.download = `chess-position-region-${new Date().toISOString().slice(0, 19)}.png`;
-                link.click();
-            } else {
-                // Fallback for web browser (optional)
-                alert('Electron is required for desktop screenshot capture. Please run this app in Electron.');
+        try {
+            logWithTimestamp('Button clicked - Starting selection mode');
+
+            if (!window.electron) {
+                logWithTimestamp('ERROR: Electron is not initialized');
+                alert('Electron is not initialized. Make sure you\'re running with: npm start');
+                return;
             }
+
+            logWithTimestamp('Electron initialized - Opening selection overlay...');
+            
+            // Invoke the Electron IPC handler
+            const imageData = await window.electron.ipcRenderer.invoke('open-selection-overlay');
+            logWithTimestamp('Selection overlay closed - Image data received from main process');
+            
+            if (!imageData) {
+                logWithTimestamp('ERROR: Failed to capture image - no data returned');
+                alert('Failed to capture image');
+                return;
+            }
+
+            logWithTimestamp('Image data validated - Creating download link');
+
+            // Download the captured region
+            const link = document.createElement('a');
+            link.href = imageData;
+            link.download = `chess-position-region-${new Date().toISOString().slice(0, 19)}.png`;
+            
+            logWithTimestamp('Download link created - Triggering download');
+            link.click();
+            
+            logWithTimestamp('Download triggered - Operation complete');
         } catch (error: any) {
-            if (error?.message !== 'Selection cancelled') {
-                console.error('Failed to capture region:', error);
-                alert('Failed to capture screenshot: ' + error?.message);
+            const elapsed = (performance.now() - startTime).toFixed(2);
+            
+            if (error?.message === 'Selection cancelled') {
+                console.log(`[${elapsed}ms] Selection cancelled by user`);
+                return;
             }
+            
+            console.error(`[${elapsed}ms] ERROR in startSelectionMode:`, error);
+            alert(`Failed to capture screenshot: ${error?.message || 'Unknown error'}`);
         }
     };
 
