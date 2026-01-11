@@ -1,4 +1,6 @@
 import ChessBoardGame from './components/ChessBoardGame';
+import Tabs from './components/Tabs';
+import TabSnapshotSettings from './components/TabSnapshotSettings';
 
 // Electron IPC type definitions
 declare global {
@@ -69,29 +71,23 @@ function App() {
     };
 
     return (
-        <div style={{ display: 'grid', placeItems: 'center', minHeight: '100dvh' }}>
-            <ChessBoardGame />
-
-            <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                <button
-                    onClick={startSelectionMode}
-                    style={{
-                        padding: '0.75rem 1.5rem',
-                        fontSize: '1rem',
-                        fontWeight: 'bold',
-                        backgroundColor: '#2196F3',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.3s'
-                    }}
-                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#0b7dda')}
-                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#2196F3')}
-                >
-                    🎯 Select Region to Screenshot
-                </button>
+        <div style={{ display: 'flex', minHeight: '100dvh', padding: '2rem', gap: '2rem', alignItems: 'flex-start', justifyContent: 'center' }}>
+            {/* Left side - Chess Board */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <ChessBoardGame />
             </div>
+
+            {/* Right side - Tabs Area */}
+            <Tabs
+                tabs={[
+                    {
+                        id: 'SnapshotSettings',
+                        label: 'Snapshot Settings',
+                        content: <TabSnapshotSettings onScreenshot={startSelectionMode} />
+                    }
+                ]}
+                defaultTab="SnapshotSettings"
+            />
         </div>
     );
 }
