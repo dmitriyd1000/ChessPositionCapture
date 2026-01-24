@@ -1,99 +1,194 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import './TabSnapshotSettings.scss';
+
+interface SnapshotSettings {
+    rbutWhiteTurn: boolean;
+    chkbxCanBlackCastleKingSide: boolean;
+    chkbxCanBlackCastleQueenSide: boolean;
+    chkbxCanWhiteCastleKingSide: boolean;
+    chkbxCanWhiteCastleQueenSide: boolean;
+    numbxTolleranceRecogn: number;
+}
 
 interface TabSnapshotSettingsProps {
     onScreenshot: () => void;
 }
 
 const TabSnapshotSettings = ({ onScreenshot }: TabSnapshotSettingsProps) => {
-    const [whoseTurn, setWhoseTurn] = useState<'White' | 'Black'>('White');
+    const [settings, setSettings] = useState<SnapshotSettings>({
+        rbutWhiteTurn: true,
+        chkbxCanWhiteCastleKingSide: true,
+        chkbxCanWhiteCastleQueenSide: true,
+        chkbxCanBlackCastleKingSide: true,
+        chkbxCanBlackCastleQueenSide: true,
+        numbxTolleranceRecogn: 0.980
+    });
+
+    const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
+    const [autoRefreshTime, setAutoRefreshTime] = useState('');
+    const [lastRecognizingTime] = useState('');
+
+    useEffect(() => {
+        // Fetch settings from backend
+        fetch('/api/settings/snapshot')
+            .then(res => res.json())
+            .then(data => setSettings(data))
+            .catch(err => console.error('Failed to load settings:', err));
+    }, []);
+
+    const updateSettings = async (updatedSettings: SnapshotSettings) => {
+        try {
+            const response = await fetch('/api/settings/snapshot', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedSettings),
+            });
+
+            if (!response.ok) {
+                console.error('Failed to update settings');
+            }
+        } catch (err) {
+            console.error('Error updating settings:', err);
+        }
+    };
+
+    const handleWhoseTurnChange = (isWhite: boolean) => {
+        const updatedSettings = { ...settings, rbutWhiteTurn: isWhite };
+        setSettings(updatedSettings);
+        updateSettings(updatedSettings);
+    };
+
+    const handleCastleChange = (field: keyof SnapshotSettings, value: boolean) => {
+        const updatedSettings = { ...settings, [field]: value };
+        setSettings(updatedSettings);
+        updateSettings(updatedSettings);
+    };
+
+    const handleToleranceChange = (value: number) => {
+        const updatedSettings = { ...settings, numbxTolleranceRecogn: value };
+        setSettings(updatedSettings);
+        updateSettings(updatedSettings);
+    };
+
+    const renderCheckbox = (label: string, field: keyof SnapshotSettings, checked: boolean) => (
+        <label className="tab-snapshot-settings__checkbox-label">
+            <input
+                type="checkbox"
+                checked={checked}
+                onChange={(e) => handleCastleChange(field, e.target.checked)}
+            />
+            <span>{label}</span>
+        </label>
+    );
+
+    const renderSection = (title: string, children: React.ReactNode) => (
+        <div className="tab-snapshot-settings__section">
+            <label className="tab-snapshot-settings__section-title">
+                {title}
+            </label>
+            {children}
+        </div>
+    );
 
     return (
-        <>
+        <div className="tab-snapshot-settings">
             {/* Screenshot Button */}
             <button
                 onClick={onScreenshot}
-                style={{
-                    width: '100%',
-                    padding: '0.75rem 1.5rem',
-                    fontSize: '1rem',
-                    fontWeight: 'bold',
-                    backgroundColor: '#2196F3',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.3s',
-                    marginBottom: '1.5rem'
-                }}
-                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#0b7dda')}
-                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#2196F3')}
+                className="tab-snapshot-settings__screenshot-button"
             >
                 🎯 Select Region to Screenshot
             </button>
 
-            {/* Whose Turn Radio Buttons */}
-            <div style={{ marginTop: '1rem' }}>
-                <label style={{ 
-                    display: 'block', 
-                    fontWeight: 'bold', 
-                    marginBottom: '0.5rem',
-                    fontSize: '0.95rem',
-                    color: '#333'
-                }}>
-                    Whose Turn
-                </label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <label style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        cursor: 'pointer',
-                        padding: '0.5rem',
-                        borderRadius: '4px',
-                        backgroundColor: whoseTurn === 'White' ? '#e3f2fd' : 'transparent',
-                        transition: 'background-color 0.2s'
-                    }}>
+            {/* Whose Turn */}
+            {renderSection('Whose Turn', (
+                <div className="tab-snapshot-settings__whose-turn">
+                    <label className="tab-snapshot-settings__whose-turn-label">
                         <input
                             type="radio"
-                            name="whoseTurn"
-                            value="White"
-                            checked={whoseTurn === 'White'}
-                            onChange={(e) => setWhoseTurn(e.target.value as 'White' | 'Black')}
-                            style={{ 
-                                marginRight: '0.5rem',
-                                cursor: 'pointer',
-                                width: '16px',
-                                height: '16px'
-                            }}
+                            checked={settings.rbutWhiteTurn}
+                            onChange={() => handleWhoseTurnChange(true)}
                         />
-                        <span style={{ fontSize: '0.95rem' }}>White</span>
+                        <span>White</span>
                     </label>
-                    <label style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        cursor: 'pointer',
-                        padding: '0.5rem',
-                        borderRadius: '4px',
-                        backgroundColor: whoseTurn === 'Black' ? '#e3f2fd' : 'transparent',
-                        transition: 'background-color 0.2s'
-                    }}>
+                    <label className="tab-snapshot-settings__whose-turn-label">
                         <input
                             type="radio"
-                            name="whoseTurn"
-                            value="Black"
-                            checked={whoseTurn === 'Black'}
-                            onChange={(e) => setWhoseTurn(e.target.value as 'White' | 'Black')}
-                            style={{ 
-                                marginRight: '0.5rem',
-                                cursor: 'pointer',
-                                width: '16px',
-                                height: '16px'
-                            }}
+                            checked={!settings.rbutWhiteTurn}
+                            onChange={() => handleWhoseTurnChange(false)}
                         />
-                        <span style={{ fontSize: '0.95rem' }}>Black</span>
+                        <span>Black</span>
                     </label>
                 </div>
-            </div>
-        </>
+            ))}
+
+            {/* Castle */}
+            {renderSection('Castle', (
+                <div>
+                    {renderCheckbox('Can White Castle King Side?', 'chkbxCanWhiteCastleKingSide', settings.chkbxCanWhiteCastleKingSide)}
+                    {renderCheckbox('Can White Castle Queen Side?', 'chkbxCanWhiteCastleQueenSide', settings.chkbxCanWhiteCastleQueenSide)}
+                    {renderCheckbox('Can Black Castle King Side?', 'chkbxCanBlackCastleKingSide', settings.chkbxCanBlackCastleKingSide)}
+                    {renderCheckbox('Can Black Castle Queen Side?', 'chkbxCanBlackCastleQueenSide', settings.chkbxCanBlackCastleQueenSide)}
+                </div>
+            ))}
+
+            {/* Recognition */}
+            {renderSection('Recognition', (
+                <div>
+                    <div className="tab-snapshot-settings__recognition-enpassa">
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={false}
+                                readOnly
+                            />
+                            <span>EnPassa</span>
+                        </label>
+                    </div>
+                    <div className="tab-snapshot-settings__recognition-tolerance">
+                        <input
+                            type="number"
+                            value={settings.numbxTolleranceRecogn}
+                            onChange={(e) => handleToleranceChange(parseFloat(e.target.value) || 0)}
+                            step="0.001"
+                            min="0"
+                            max="1"
+                        />
+                    </div>
+                </div>
+            ))}
+
+            {/* Auto Refresh */}
+            {renderSection('Auto Refresh', (
+                <div>
+                    <label className="tab-snapshot-settings__auto-refresh-enable">
+                        <input
+                            type="checkbox"
+                            checked={autoRefreshEnabled}
+                            onChange={(e) => setAutoRefreshEnabled(e.target.checked)}
+                        />
+                        <span>Enable</span>
+                    </label>
+                    <div className="tab-snapshot-settings__auto-refresh-time">
+                        <span>Time, s</span>
+                        <input
+                            type="text"
+                            value={autoRefreshTime}
+                            onChange={(e) => setAutoRefreshTime(e.target.value)}
+                        />
+                    </div>
+                    <div className="tab-snapshot-settings__auto-refresh-warning">
+                        Time cannot be bigger than recognizing<br />
+                        time. It will be corrected if it is less.
+                    </div>
+                    <div className="tab-snapshot-settings__auto-refresh-last-time">
+                        Last recognizing time, {lastRecognizingTime && <span className="tab-snapshot-settings__auto-refresh-last-time-value">{lastRecognizingTime}</span>}
+                    </div>
+                </div>
+            ))}
+        </div>
     );
 };
 

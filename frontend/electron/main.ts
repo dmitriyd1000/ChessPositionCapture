@@ -33,7 +33,7 @@ type OverlayBoundsDto = { X: number; Y: number; Width: number; Height: number };
 
 async function fetchOverlayBoundsFromBackend(): Promise<{x:number;y:number;width:number;height:number}|null> {
   try {
-    const res = await fetch('http://localhost:5145/api/overlay-bounds');
+    const res = await fetch('http://localhost:5145/api/settings/overlay-bounds');
     if (!res.ok) return null;
     const j = (await res.json()) as OverlayBoundsDto;
     if (
@@ -52,7 +52,7 @@ async function fetchOverlayBoundsFromBackend(): Promise<{x:number;y:number;width
 
 async function saveOverlayBoundsToBackend(b: {x:number;y:number;width:number;height:number}) {
   try {
-    await fetch('http://localhost:5145/api/overlay-bounds', {
+    await fetch('http://localhost:5145/api/settings/overlay-bounds', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ X: b.x, Y: b.y, Width: b.width, Height: b.height })
