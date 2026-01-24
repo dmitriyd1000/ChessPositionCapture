@@ -20,7 +20,7 @@ builder.Services.AddTransient<IWritableOptions<AppSettings>>(provider =>
 });
 
 // Register services
-builder.Services.AddScoped<RecognizerService>();
+builder.Services.AddScoped<IRecognizerService, RecognizerService>();
 
 // Add MVC controllers
 builder.Services.AddControllers();
